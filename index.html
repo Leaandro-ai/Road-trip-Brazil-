@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌴 Road Trip Bahia 2026 — La Tudo Team</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Caveat:wght@400;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+  :root { --vert:#009C3B; --jaune:#FFDF00; --bleu:#002776; --rose:#FF6B9D; --orange:#FF8C42; --crème:#FFF8E7; --noir:#1A1A2E; --sable:#F4E5C2; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { font-family:'DM Sans',sans-serif; background:var(--crème); color:var(--noir); overflow-x:hidden; }
+  .hero { min-height:100vh; background:linear-gradient(135deg,var(--vert) 0%,var(--jaune) 50%,var(--orange) 100%); position:relative; display:flex; align-items:center; justify-content:center; overflow:hidden; padding:2rem; }
+  .hero::before { content:''; position:absolute; inset:0; background-image:radial-gradient(circle at 20% 30%,rgba(255,255,255,0.3) 0%,transparent 50%),radial-gradient(circle at 80% 70%,rgba(0,39,118,0.2) 0%,transparent 50%); animation:float 20s ease-in-out infinite; }
+  @keyframes float { 0%,100% { transform:translate(0,0); } 50% { transform:translate(-20px,-20px); } }
+  .palmier { position:absolute; font-size:8rem; opacity:0.15; user-select:none; }
+  .palmier-1 { top:10%; left:5%; transform:rotate(-15deg); }
+  .palmier-2 { bottom:10%; right:5%; transform:rotate(15deg); }
+  .palmier-3 { top:20%; right:15%; font-size:5rem; transform:rotate(20deg); }
+  .hero-content { text-align:center; z-index:2; position:relative; animation:fadeInUp 1.2s ease; }
+  @keyframes fadeInUp { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
+  .hero-tag { font-family:'Caveat',cursive; font-size:2rem; color:var(--bleu); transform:rotate(-3deg); display:inline-block; margin-bottom:1rem; }
+  .hero-title { font-family:'Bebas Neue',sans-serif; font-size:clamp(3.5rem,12vw,9rem); line-height:0.9; color:var(--noir); text-shadow:6px 6px 0 var(--jaune),12px 12px 0 var(--vert); letter-spacing:0.02em; }
+  .hero-title span { color:var(--bleu); }
+  .hero-subtitle { margin-top:2rem; font-size:1.3rem; font-weight:500; background:rgba(255,255,255,0.7); display:inline-block; padding:0.5rem 1.5rem; border-radius:100px; backdrop-filter:blur(5px); }
+  .hero-dates { margin-top:1.5rem; font-family:'Bebas Neue',sans-serif; font-size:1.8rem; color:var(--bleu); letter-spacing:0.1em; }
+  .countdown { margin-top:2rem; background:var(--noir); color:var(--jaune); padding:1rem 2rem; border-radius:100px; display:inline-block; font-family:'Bebas Neue',sans-serif; font-size:1.3rem; letter-spacing:0.1em; }
+  .scroll-indicator { position:absolute; bottom:2rem; left:50%; transform:translateX(-50%); animation:bounce 2s infinite; font-size:2rem; }
+  @keyframes bounce { 0%,100% { transform:translateX(-50%) translateY(0); } 50% { transform:translateX(-50%) translateY(-10px); } }
+  section { padding:5rem 2rem; max-width:1400px; margin:0 auto; }
+  .section-title { font-family:'Bebas Neue',sans-serif; font-size:clamp(2.5rem,6vw,5rem); margin-bottom:3rem; position:relative; display:inline-block; }
+  .section-title::after { content:''; position:absolute; bottom:-10px; left:0; width:60%; height:8px; background:linear-gradient(90deg,var(--vert),var(--jaune),var(--orange)); border-radius:4px; }
+  .crew-section { background:var(--noir); color:var(--crème); max-width:100%; margin:0; padding:5rem 2rem; }
+  .crew-inner { max-width:1400px; margin:0 auto; }
+  .crew-section .section-title { color:var(--jaune); }
+  .crew-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1.5rem; margin-top:2rem; }
+  .crew-member { background:linear-gradient(135deg,var(--vert),var(--bleu)); padding:2rem 1rem; border-radius:20px; text-align:center; transition:all 0.3s ease; position:relative; overflow:hidden; }
+  .crew-member:hover { transform:translateY(-5px) rotate(2deg); box-shadow:0 20px 40px rgba(0,156,59,0.3); }
+  .crew-member:nth-child(2n) { background:linear-gradient(135deg,var(--orange),var(--rose)); }
+  .crew-member:nth-child(3n) { background:linear-gradient(135deg,var(--bleu),var(--jaune)); }
+  .crew-emoji { font-size:2.5rem; margin-bottom:0.5rem; display:block; }
+  .crew-name { font-family:'Bebas Neue',sans-serif; font-size:1.5rem; letter-spacing:0.05em; }
+  .map-section { background:var(--sable); max-width:100%; margin:0; padding:5rem 2rem; }
+  .map-inner { max-width:1400px; margin:0 auto; }
+  #map { height:500px; border-radius:30px; border:6px solid var(--noir); box-shadow:12px 12px 0 var(--vert); margin-top:2rem; }
+  .map-legend { display:flex; flex-wrap:wrap; gap:1rem; margin-top:2rem; justify-content:center; }
+  .legend-item { display:flex; align-items:center; gap:0.5rem; background:white; padding:0.5rem 1rem; border-radius:100px; font-weight:500; border:2px solid var(--noir); }
+  .legend-dot { width:16px; height:16px; border-radius:50%; }
+  .timeline { position:relative; padding-left:2rem; }
+  .timeline::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:linear-gradient(180deg,var(--vert),var(--jaune),var(--orange),var(--rose)); border-radius:2px; }
+  .day { position:relative; margin-bottom:3rem; background:white; border-radius:20px; padding:2rem; box-shadow:8px 8px 0 var(--noir); border:3px solid var(--noir); }
+  .day::before { content:''; position:absolute; left:-2.5rem; top:2rem; width:20px; height:20px; background:var(--jaune); border:4px solid var(--noir); border-radius:50%; }
+  .day-header { display:flex; flex-wrap:wrap; gap:1rem; align-items:center; margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:2px dashed var(--noir); }
+  .day-date { font-family:'Bebas Neue',sans-serif; font-size:2rem; color:var(--bleu); letter-spacing:0.05em; }
+  .day-tag { background:var(--jaune); padding:0.3rem 1rem; border-radius:100px; font-weight:700; font-size:0.9rem; border:2px solid var(--noir); }
+  .day-tag.fire { background:var(--orange); color:white; animation:pulse 2s infinite; }
+  .day-tag.bus { background:var(--bleu); color:white; }
+  .day-tag.warning { background:#ff4444; color:white; }
+  @keyframes pulse { 0%,100% { box-shadow:0 0 0 0 rgba(255,140,66,0.5); } 50% { box-shadow:0 0 0 10px rgba(255,140,66,0); } }
+  .day-location { font-family:'Caveat',cursive; font-size:1.5rem; color:var(--vert); font-weight:700; }
+  .moment-block { background:var(--crème); border-radius:12px; padding:1.2rem; margin-bottom:1rem; border-left:5px solid var(--vert); }
+  .moment-block.midi { border-left-color:var(--orange); }
+  .moment-block.soir { border-left-color:var(--rose); }
+  .moment-title { font-family:'Bebas Neue',sans-serif; font-size:1.2rem; margin-bottom:0.5rem; color:var(--bleu); letter-spacing:0.05em; }
+  .moment-content { line-height:1.7; color:var(--noir); white-space:pre-line; }
+  .day-photos { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:0.8rem; margin-top:1rem; }
+  .photo-slot { aspect-ratio:1; border-radius:12px; background:linear-gradient(135deg,#f0f0f0,#e0e0e0); border:2px dashed #aaa; display:flex; align-items:center; justify-content:center; color:#888; font-size:0.9rem; text-align:center; padding:0.5rem; overflow:hidden; }
+  .photo-slot img { width:100%; height:100%; object-fit:cover; border-radius:10px; }
+  .day-content { display:grid; grid-template-columns:1fr; gap:1.5rem; }
+  @media (min-width:900px) { .day-content { grid-template-columns:2fr 1fr; } }
+  .day-sidebar { background:var(--crème); padding:1.5rem; border-radius:15px; border:2px dashed var(--vert); }
+  .sidebar-block { margin-bottom:1.5rem; }
+  .sidebar-block:last-child { margin-bottom:0; }
+  .sidebar-block h5 { font-family:'Bebas Neue',sans-serif; font-size:1rem; color:var(--orange); margin-bottom:0.5rem; letter-spacing:0.1em; }
+  .budget-line { display:flex; justify-content:space-between; padding:0.3rem 0; border-bottom:1px dotted #ccc; font-size:0.9rem; }
+  .budget-line:last-child { border-bottom:none; font-weight:700; color:var(--vert); margin-top:0.5rem; padding-top:0.5rem; border-top:2px solid var(--vert); }
+  .resto-item { background:white; padding:0.6rem 0.8rem; border-radius:8px; margin-bottom:0.5rem; font-size:0.9rem; border-left:3px solid var(--rose); }
+  .tip-item { background:white; padding:0.6rem 0.8rem; border-radius:8px; margin-bottom:0.5rem; font-size:0.85rem; border-left:3px solid var(--bleu); font-style:italic; }
+  .budget-section { background:var(--bleu); color:var(--crème); max-width:100%; margin:0; padding:5rem 2rem; text-align:center; }
+  .budget-section .section-title { color:var(--jaune); }
+  .budget-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1.5rem; margin-top:2rem; max-width:1200px; margin-left:auto; margin-right:auto; }
+  .budget-card { background:rgba(255,255,255,0.1); backdrop-filter:blur(10px); padding:2rem 1rem; border-radius:20px; border:2px solid var(--jaune); }
+  .budget-card-emoji { font-size:2.5rem; margin-bottom:0.5rem; }
+  .budget-card-amount { font-family:'Bebas Neue',sans-serif; font-size:2.5rem; color:var(--jaune); margin:0.5rem 0; }
+  .budget-card-label { font-size:0.9rem; opacity:0.9; }
+  .budget-total { margin-top:3rem; padding:2rem; background:var(--vert); border-radius:30px; display:inline-block; border:4px solid var(--jaune); }
+  .budget-total-amount { font-family:'Bebas Neue',sans-serif; font-size:4rem; color:var(--jaune); line-height:1; }
+  .budget-disclaimer { margin-top:2rem; font-style:italic; opacity:0.8; font-size:0.9rem; max-width:600px; margin-left:auto; margin-right:auto; }
+  .reservations-section { background:var(--crème); max-width:100%; margin:0; padding:5rem 2rem; }
+  .reservations-inner { max-width:1400px; margin:0 auto; }
+  .reservations-table { background:white; border-radius:20px; overflow:hidden; box-shadow:8px 8px 0 var(--noir); border:3px solid var(--noir); margin-top:2rem; }
+  .resa-row { display:grid; grid-template-columns:auto 1fr auto auto; gap:1rem; align-items:center; padding:1rem 1.5rem; border-bottom:2px dashed #eee; }
+  .resa-row:last-child { border-bottom:none; }
+  .resa-row.header { background:var(--noir); color:var(--jaune); font-family:'Bebas Neue',sans-serif; letter-spacing:0.1em; }
+  .resa-icon { font-size:1.8rem; }
+  .resa-status { padding:0.3rem 0.8rem; border-radius:100px; font-size:0.8rem; font-weight:700; border:2px solid; }
+  .resa-status.todo { background:#ffe5e5; color:#cc0000; border-color:#cc0000; }
+  .resa-status.done { background:#e5ffe5; color:#009900; border-color:#009900; }
+  .resa-price { font-family:'Bebas Neue',sans-serif; font-size:1.3rem; color:var(--vert); }
+  @media (max-width:700px) { .resa-row { grid-template-columns:1fr; gap:0.5rem; } .resa-row.header { display:none; } }
+  .checklist-section { background:var(--sable); max-width:100%; margin:0; padding:5rem 2rem; }
+  .checklist-inner { max-width:1400px; margin:0 auto; }
+  .checklist-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1.5rem; margin-top:2rem; }
+  .checklist-card { background:white; border-radius:20px; padding:1.5rem; border:3px solid var(--noir); box-shadow:6px 6px 0 var(--orange); }
+  .checklist-card h3 { font-family:'Bebas Neue',sans-serif; font-size:1.5rem; color:var(--bleu); margin-bottom:1rem; letter-spacing:0.05em; padding-bottom:0.5rem; border-bottom:2px dashed var(--orange); }
+  .checklist-card ul { list-style:none; padding:0; }
+  .checklist-card li { padding:0.4rem 0; padding-left:1.5rem; position:relative; line-height:1.5; font-size:0.95rem; }
+  .checklist-card li::before { content:'☐'; position:absolute; left:0; color:var(--vert); font-weight:700; font-size:1.1rem; }
+  .infos-section { background:var(--noir); color:var(--crème); max-width:100%; margin:0; padding:5rem 2rem; }
+  .infos-inner { max-width:1400px; margin:0 auto; }
+  .infos-section .section-title { color:var(--jaune); }
+  .infos-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1.5rem; margin-top:2rem; }
+  .info-card { background:rgba(255,255,255,0.05); backdrop-filter:blur(10px); border-radius:20px; padding:1.5rem; border:2px solid var(--jaune); }
+  .info-card h3 { font-family:'Bebas Neue',sans-serif; font-size:1.5rem; color:var(--jaune); margin-bottom:1rem; letter-spacing:0.05em; }
+  .info-card p { line-height:1.6; margin-bottom:0.8rem; font-size:0.95rem; }
+  .info-card strong { color:var(--orange); }
+  .info-card .alert { background:rgba(255,68,68,0.2); border-left:4px solid #ff4444; padding:0.8rem; border-radius:8px; margin-top:0.8rem; font-size:0.9rem; }
+  footer { background:var(--noir); color:var(--crème); text-align:center; padding:3rem 2rem; }
+  footer p { margin:0.5rem 0; }
+  .footer-title { font-family:'Bebas Neue',sans-serif; font-size:2rem; color:var(--jaune); margin-bottom:1rem; }
+  .footer-emoji { font-size:2rem; margin:1rem 0; }
+  .footer-credits { margin-top:2rem; padding:1rem 1.5rem; background:rgba(255,223,0,0.1); border-radius:15px; display:inline-block; border:2px dashed var(--jaune); }
+  .footer-credits strong { color:var(--jaune); font-family:'Bebas Neue',sans-serif; font-size:1.3rem; letter-spacing:0.1em; }
+  @media (max-width:768px) { .palmier { font-size:5rem; } section { padding:3rem 1rem; } .timeline { padding-left:1.5rem; } .day { padding:1.5rem; } .day::before { left:-2rem; } }
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="palmier palmier-1">🌴</div>
+  <div class="palmier palmier-2">🌴</div>
+  <div class="palmier palmier-3">🌴</div>
+  <div class="hero-content">
+    <div class="hero-tag">~ La Tudo Team · 9 Tudopotes ~</div>
+    <h1 class="hero-title">ROAD TRIP<br><span>BAHIA</span></h1>
+    <div class="hero-subtitle">🇧🇷 Salvador → Chapada Diamantina → Rio 🇧🇷</div>
+    <div class="hero-dates">27 JUIN — 5 JUILLET 2026</div>
+    <div class="countdown" id="countdown">⏳ Calcul en cours...</div>
+  </div>
+  <div class="scroll-indicator">↓</div>
+</section>
+
+<div class="crew-section">
+  <div class="crew-inner">
+    <h2 class="section-title">A bordo 🛥️</h2>
+    <p style="font-size:1.2rem; margin-bottom:1rem;">La Tudo Team à l'attaque de Bahia</p>
+    <div class="crew-grid">
+      <div class="crew-member"><span class="crew-emoji">⚡️</span><div class="crew-name">Constance</div></div>
+      <div class="crew-member"><span class="crew-emoji">🦧</span><div class="crew-name">Aloïs</div></div>
+      <div class="crew-member"><span class="crew-emoji">🦅</span><div class="crew-name">Léandro</div></div>
+      <div class="crew-member"><span class="crew-emoji">🐅</span><div class="crew-name">Mika</div></div>
+      <div class="crew-member"><span class="crew-emoji">🌊</span><div class="crew-name">Noé</div></div>
+      <div class="crew-member"><span class="crew-emoji">👹</span><div class="crew-name">Manon</div></div>
+      <div class="crew-member"><span class="crew-emoji">🍺</span><div class="crew-name">Axel</div></div>
+      <div class="crew-member"><span class="crew-emoji">🦈</span><div class="crew-name">Augustin</div></div>
+      <div class="crew-member"><span class="crew-emoji">👽</span><div class="crew-name">Théophile</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="map-section">
+  <div class="map-inner">
+    <h2 class="section-title">L'itinéraire 🗺️</h2>
+    <div id="map"></div>
+    <div class="map-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#009C3B"></div>Salvador</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#FFDF00"></div>Chapada Diamantina</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#002776"></div>Rio de Janeiro</div>
+    </div>
+  </div>
+</div>
+
+<section>
+  <h2 class="section-title">Le programme 📅</h2>
+  <div class="timeline">
+
+    <div class="day">
+      <div class="day-header"><div class="day-date">SAM. 27 JUIN</div><div class="day-location">Rio → Salvador 🇧🇷</div></div>
+      <div class="day-content"><div>
+        <div class="moment-block"><div class="moment-title">🌅 Matin</div><div class="moment-content">✈️ Vol Rio → Salvador (matin, ~2h15)
+Aéroport SSA puis taxi/Uber jusqu'au Pelourinho (~25 €/voiture, 30 min)</div></div>
+        <div class="moment-block midi"><div class="moment-title">☀️ Après-midi</div><div class="moment-content">Installation à la pousada Pelourinho
+Première découverte du quartier historique
+Balade dans les ruelles colorées</div></div>
+        <div class="moment-block soir"><div class="moment-title">🌙 Soirée</div><div class="moment-content">Dîner moqueca (plat typique de Bahia)
+Premières caïpis sur le Largo do Pelourinho</div></div>
+        <div class="moment-block" style="border-left-color:var(--bleu);"><div class="moment-title">📸 Photos du jour</div><div class="day-photos"><div class="photo-slot">+ Photo</div><div class="photo-slot">+ Photo</div><div class="photo-slot">+ Photo</div><div class="photo-slot">+ Photo</div></div></div>
+      </div>
+      <div class="day-sidebar">
+        <div class="sidebar-block"><h5>💰 Budget / pers</h5>
+          <div class="budget-line"><span>Vol Rio→Salvador</span><span>~150 €</span></div>
+          <div class="budget-line"><span>Transfert + repas</span><span>~25 €</span></div>
+          <div class="budget-line"><span>Total jour</span><span>~175 €</span></div>
+        </div>
+        <div class="sidebar-block"><h5>🍴 À tester</h5>
+          <div class="resto-item">Moqueca au Pelourinho</div>
+          <div class="resto-item">Bars du Largo do Pelourinho</div>
+        </div>
+        <div class="sidebar-block"><h5>📌 À ne pas oublier</h5>
+          <div class="tip-item">Passeport + billet imprimé</div>
+          <div class="tip-item">Adresse pousada notée</div>
+          <div class="tip-item">Premières réais en cash</div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="day">
+      <div class="day-header"><div class="day-date">DIM. 28 JUIN</div><div class="day-tag fire">🔥 GROSSE SOIRÉE</div><div class="day-location">Salvador</div></div>
+      <div class="day-content"><div>
+        <div class="moment-block"><div class="moment-title">🌅 Matin</div><div class="moment-content">Visite Pelourinho à fond
+Igreja São Francisco (église dorée, ~3 €/pax)
+Largo do Pelourinho</div></div>
+        <div class="moment-block midi"><div class="moment-title">☀️ Après-midi</div><div class="moment-content">Plage Porto da Barra
+Coucher de soleil culte sur la plage 🌅
+THE moment du séjour</div></div>
+        <div class="moment-block soir"><div class="moment-title">🌙 Soirée 🔥</div><div class="moment-content">SOIRÉE PELOURINHO 🎉
+Le samedi = ambiance fête maximale dans le centre
+Concerts, samba reggae, rues animées</div></div>
+        <div class="moment-block" style="border-left-color:var(--bleu);"><div class="moment-title">📸 Photos du jour</div><div class="day-photos"><div class="photo-slot">+ Photo</div><div class="photo-slot">+ Photo</div><div class="photo-slot">+ Photo</div><div class="photo-slot">+ Photo</div></div></div>
+      </div>
+      <div class="day-sidebar">
+        <div class="sidebar-block"><h5>💰 Budget / pers</h5>
+          <div class="budget-line"><span>Logement</span><span>~30 €</span></div>
+          <div class="budget-line"><span>Visites + plage</span><span>~10 €</span></div>
+          <div class="budget-line"><span>Soirée 🔥</span><span>~25 €</span></div>
+          <div class="budget-line"><span>Total jour</span><span>~65 €</span></div>
+        </div>
+        <div class="sidebar-block"><h5>📌 À ne pas oublier</h5>
+          <div class="tip-item">Tenue légère</div>
+          <div class="tip-item">Chaussures confort (pavés !)</div>
+          <div class="tip-item">Cash pour Baianas et bars</div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="day">
+      <div class="day-header"><div class="day-date">LUN. 29 JUIN</div><div class="day-location">Salvador</div></div>
+      <div class="day-content"><div>
+        <div class="moment-block"><div class="moment-title">🌅 Matin</div><div class="moment-content">Cours de capoeira (1h, ~15-20 €/pax) 🥋
+Plusieurs écoles : Mestre Bimba ou Pastinha</div></div>
+        <div class="moment-block midi"><div class="moment-title">☀️ Après-midi</div><div class="moment-content">Déjeuner acarajé chez Dinha (Rio Vermelho) 🌶️
+Institution de Salvador, à ne pas manquer
+Mercado Modelo + Elevador Lacerda</div></div>
+        <div class="moment-block soir"><div class="moment-title">🌙 Soirée</div><div class="moment-content">Soirée chill au Pelourinho
+Bars locaux, ambiance plus tranquille</div></div>
+        <div class="moment-block" style="border-left-color:var(--bleu);"><div class="moment-title">📸 Photos du jour</div><div class="day-photos"><div class="photo-slot">+ Photo</div><div class="photo-slot">+ Photo</div><div class="photo-slot">+ Photo</div><div class="photo-slot">+ Photo</div></div></div>
+      </div>
+      <div class="day-sidebar">
+        <div class="sidebar-block"><h5>💰 Budget / pers</h5>
+          <div class="budget-line"><span>Logement</span><span>~30 €</span></div>
+          <div class="budget-line"><span>Capoeira</span><span>~20 €</span></div>
+          <div class="budget-line"><span>Repas + visites</span><span>~25 €</span></div>
+          <div class="budget-line"><span>Total jour</span><span>~75 €</span></div>
+        </div>
+        <div class="sidebar-block"><h5>🍴 À tester</h5>
+          <div class="resto-item">Acarajé da Dinha 🌶️</div>
+          <div class="resto-item">Mercado Modelo</div>
+        </div>
+        <div class="sidebar-block"><h5>📌 À ne pas oublier</h5>
+          <div class="tip-item">Tenue sport pour capoeira</div>
+          <div class="tip-item">Eau, beaucoup d'eau</div>
+          <div class="tip-item">Appétit pour acarajé !</div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="day">
+      <div class="day-header"><div class="day-date">MAR. 30 JUIN</div><div class="day-tag bus">🚌 BUS DE NUIT</div><div class="day-location">Salvador → Chapada</div></div>
+      <div class="day-content"><div>
+        <div class="moment-block"><div class="moment-title">🌅 Matin & Après-midi</div><div class="moment-content">Tour en goélette dans la baie de Todos os Santos (journée, ~25 €/pax)
+Arrêts à Itaparica & îles, repas inclus à bord
+À réserver la veille au port
+
+OU si pluvieux : atelier cuisine bahianaise (~30 €)</div></div>
+        <div class="moment-block soir"><div class="moment-title">🌙 Soirée</div><div class="moment-content">Bar à cachaças (O Cravinho) 🥃
+Dîner rapide
+🚌 Départ bus de nuit vers 22h pour Lençóis (Chapada)
+Compagnies : Real Expresso ou Águia Branca</div></div>
+        <div class="moment-block" style="border-left-color:var(--bleu);"><div class="moment-title">📸 Photos du jour</div><div class="day-photos"><div class="photo-slot">+ Photo</div><div class="photo-slot">+ Photo</div><div class="photo-slot">+ Photo</div><div class="photo-slot">+ Photo</div></div></div>
+      </div>
+      <div class="day-sidebar">
+        <div class="sidebar-block"><h5>💰 Budget / pers</h5>
+          <div class="budget-line"><span>Goélette / atelier</span><span>~25 €</span></div>
+          <div class="budget-line"><span>Repas + cachaça</span><span>~20 €</span></div>
+          <div class="budget-line"><span>Bus de nuit</span><span>~25 €</span></div>
+          <div class="budget-line"><span>Total jour</span><span>~70 €</span></div>
+        </div>
+        <div class="sidebar-block"><h5>📌 À ne pas oublier</h5>
+          <div class="tip-item">⚠️ Bagages avec soi pour le bus</div>
+          <div class="tip-item">Pull/sweat (clim bus à fond)</div>
+          <div class="tip-item">Oreiller cervical, snacks</div>
+          <div class="tip-item">Chargeur, billet bus imprimé</div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="day">
+      <div class="day-header"><div class="day-date">MER. 1ER JUIL.</div><div class="day-location">🏔️ Chapada Diamantina</div></div>
+      <div class="day-content"><div>
+        <div class="moment-block"><div class="moment-title">🌅 Matin</div><div class="moment-content">Arrivée Lençóis ~5h du matin
+Petit-déj + douche à la pousada
+Préviens la pousada de l'arrivée tôt</div></div>
+        <div class="moment-block midi"><div class="moment-title">☀️ Journée</div><div class="moment-content">Excursion Circuito Diamante :
+💎 Poço Azul (eaux turquoise)
+💎 Poço Encantado (rayons fluo entre 12h-14h = MAGIQUE)
+💎 Gruta da Lapa Doce (grotte impressionnante)
+🌄 Sunset au Morro do Pai Inácio (THE photo de la Chapada)</div></div>
+        <div class="moment-block soir"><div class="moment-title">🌙 Soirée</div><div class="moment-content">Dîner à Lençóis
+Ambiance villageoise tranquille
+Nuit à la pousada</div></div>
+        <div class="moment-block" style="border-left-color:var(--bleu);"><div class="moment-title">📸 Photos du jour</div><div class="day-photos"><div class="photo-slot">+ Photo</div><div class="photo-slot">+ Photo</div><div class="photo-slot">+ Photo</div><div class="photo-slot">+ Photo</div></div></div>
+      </div>
+      <div class="day-sidebar">
+        <div class="sidebar-block"><h5>💰 Budget / pers</h5>
+          <div class="budget-line"><span>Pousada Lençóis</span><span>~30 €</span></div>
+          <div class="budget-line"><span>Excursion guide+van</span><span>~40 €</span></div>
+          <div class="budget-line"><span>Repas</span><span>~20 €</span></div>
+          <div class="budget-line"><span>Total jour</span><span>~90 €</span></div>
+        </div>
+        <div class="sidebar-block"><h5>📌 À ne pas oublier</h5>
+          <div class="tip-item">Maillot, serviette microfibre</div>
+          <div class="tip-item">Baskets de marche</div>
+          <div class="tip-item">Lampe frontale (grottes)</div>
+          <div class="tip-item">⏰ Poço Encantado : viser 12h-14h</div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="day">
+      <div class="day-header"><div class="day-date">JEU. 2 JUIL.</div><div class="day-tag bus">🚌 BUS DE NUIT</div><div class="day-location">Chapada → Salvador</div></div>
+      <div class="day-content"><div>
+        <div class="moment-block"><div class="moment-title">🌅 Journée</div><div class="moment-content">Excursion grosse cascade (au choix selon météo & forme du groupe) :
+
+💧 Cachoeira da Fumaça (380m, vue d'en haut, ~5h de marche)
+→ + accessible, vue spectaculaire
+
+💦 Cachoeira do Buracão (canyon, on nage jusqu'à la cascade)
+→ + aventureux, dans l'eau
+
+À voir avec l'agence le matin même</div></div>
+        <div class="moment-block soir"><div class="moment-title">🌙 Soirée</div><div class="moment-content">Retour pousada, douche, dîner précoce
+🚌 Bus de nuit ~22h Lençóis → Salvador</div></div>
+        <div class="moment-block" style="border-left-color:var(--bleu);"><div class="moment-title">📸 Photos du jour</div><div class="day-photos"><div class="photo-slot">+ Photo</div><div class="photo-slot">+ Photo</div><div class="photo-slot">+ Photo</div><div class="photo-slot">+ Photo</div></div></div>
+      </div>
+      <div class="day-sidebar">
+        <div class="sidebar-block"><h5>💰 Budget / pers</h5>
+          <div class="budget-line"><span>Excursion cascade</span><span>~40 €</span></div>
+          <div class="budget-line"><span>Repas</span><span>~20 €</span></div>
+          <div class="budget-line"><span>Bus de nuit retour</span><span>~25 €</span></div>
+          <div class="budget-line"><span>Total jour</span><span>~85 €</span></div>
+        </div>
+        <div class="sidebar-block"><h5>📌 À ne pas oublier</h5>
+          <div class="tip-item">Sac à dos jour</div>
+          <div class="tip-item">Chaussures qui sèchent vite</div>
+          <div class="tip-item">Fringues de rechange (bus)</div>
+          <div class="tip-item">Crème solaire, eau</div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="day">
+      <div class="day-header"><div class="day-date">VEN. 3 JUIL.</div><div class="day-location">Salvador (retour)</div></div>
+      <div class="day-content"><div>
+        <div class="moment-block"><div class="moment-title">🌅 Matin</div><div class="moment-content">Arrivée Salvador ~5h du matin (du bus de nuit)
+Sieste, petit-déj, douche
+Récupération de la nuit dans le bus</div></div>
+        <div class="moment-block midi"><div class="moment-title">☀️ Après-midi</div><div class="moment-content">Détente à Salvador
+Shopping, derniers souvenirs au Mercado Modelo
+Dernières plages ou balade</div></div>
+        <div class="moment-block soir"><div class="moment-title">🌙 Soirée</div><div class="moment-content">Dernière soirée à Salvador
+Pelourinho ou Rio Vermelho selon l'humeur
+Au lit pas trop tard (vol le lendemain)</div></div>
+        <div class="moment-block" style="border-left-color:var(--bleu);"><div class="moment-title">📸 Photos du jour</div><div class="day-photos"><div class="photo-slot">+ Photo</div><div class="photo-slot">+ Photo</div><div class="photo-slot">+ Photo</div><div class="photo-slot">+ Photo</div></div></div>
+      </div>
+      <div class="day-sidebar">
+        <div class="sidebar-block"><h5>💰 Budget / pers</h5>
+          <div class="budget-line"><span>Logement Salvador</span><span>~30 €</span></div>
+          <div class="budget-line"><span>Repas + souvenirs</span><span>~30 €</span></div>
+          <div class="budget-line"><span>Soirée</span><span>~20 €</span></div>
+          <div class="budget-line"><span>Total jour</span><span>~80 €</span></div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="day">
+      <div class="day-header"><div class="day-date">SAM. 4 JUIL.</div><div class="day-tag warning">⚠️ JOURNÉE CRITIQUE</div><div class="day-location">Salvador → Rio ✈️</div></div>
+      <div class="day-content"><div>
+        <div class="moment-block"><div class="moment-title">🌅 Matin</div><div class="moment-content">Préparation valises
+Bagages en consigne ou pousada
+Dernier café à Salvador ☕</div></div>
+        <div class="moment-block midi"><div class="moment-title">☀️ Après-midi</div><div class="moment-content">✈️ Vol Salvador → Rio (viser 14h-16h)
+PAS trop tôt (on sera fatigués)
+PAS trop tard (vol France le 5 au matin)
+Installation à Rio</div></div>
+        <div class="moment-block soir"><div class="moment-title">🌙 Soirée</div><div class="moment-content">Soirée chill à Rio
+Au lit TÔT (vol retour France au petit matin)
+Faire la valise la veille</div></div>
+        <div class="moment-block" style="border-left-color:var(--bleu);"><div class="moment-title">📸 Photos du jour</div><div class="day-photos"><div class="photo-slot">+ Photo</div><div class="photo-slot">+ Photo</div><div class="photo-slot">+ Photo</div><div class="photo-slot">+ Photo</div></div></div>
+      </div>
+      <div class="day-sidebar">
+        <div class="sidebar-block"><h5>💰 Budget / pers</h5>
+          <div class="budget-line"><span>Vol Salvador→Rio</span><span>~60 €</span></div>
+          <div class="budget-line"><span>Logement Rio</span><span>~30 €</span></div>
+          <div class="budget-line"><span>Repas</span><span>~25 €</span></div>
+          <div class="budget-line"><span>Total jour</span><span>~115 €</span></div>
+        </div>
+        <div class="sidebar-block"><h5>📌 À ne pas oublier</h5>
+          <div class="tip-item">Tout son cash brésilien restant</div>
+          <div class="tip-item">Valise faite la veille</div>
+          <div class="tip-item">Billet vol France imprimé</div>
+          <div class="tip-item">Réveil pour vol matin</div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="day">
+      <div class="day-header"><div class="day-date">DIM. 5 JUIL.</div><div class="day-location">Rio → France 🇫🇷</div></div>
+      <div class="day-content"><div>
+        <div class="moment-block"><div class="moment-content">✈️ Vol retour France très tôt le matin
+Aéroport GIG (international), arriver 3h avant
+Taxi/Uber depuis le logement Rio
+Saudades... 🥲</div></div>
+        <div class="moment-block" style="border-left-color:var(--bleu);"><div class="moment-title">📸 Photos du jour</div><div class="day-photos"><div class="photo-slot">+ Photo</div><div class="photo-slot">+ Photo</div><div class="photo-slot">+ Photo</div><div class="photo-slot">+ Photo</div></div></div>
+      </div>
+      <div class="day-sidebar">
+        <div class="sidebar-block"><h5>💰 Budget / pers</h5>
+          <div class="budget-line"><span>Taxi/Uber aéroport</span><span>~15 €</span></div>
+          <div class="budget-line"><span>Total jour</span><span>~15 €</span></div>
+        </div>
+        <div class="sidebar-block"><h5>📌 À ne pas oublier</h5>
+          <div class="tip-item">Passeport, billet</div>
+          <div class="tip-item">Présents pour la famille</div>
+          <div class="tip-item">Dernière caïpi à l'aéroport ?</div>
+        </div>
+      </div></div>
+    </div>
+
+  </div>
+</section>
+
+<div class="budget-section">
+  <h2 class="section-title">Budget global 💰</h2>
+  <p style="margin-bottom:1rem; opacity:0.9;">Estimation par personne pour le road trip Bahia</p>
+  <div class="budget-grid">
+    <div class="budget-card"><div class="budget-card-emoji">✈️</div><div class="budget-card-amount">~210 €</div><div class="budget-card-label">Vols internes</div></div>
+    <div class="budget-card"><div class="budget-card-emoji">🏠</div><div class="budget-card-amount">~180 €</div><div class="budget-card-label">Logements (6 nuits)</div></div>
+    <div class="budget-card"><div class="budget-card-emoji">🚌</div><div class="budget-card-amount">~50 €</div><div class="budget-card-label">Bus de nuit AR</div></div>
+    <div class="budget-card"><div class="budget-card-emoji">🏔️</div><div class="budget-card-amount">~80 €</div><div class="budget-card-label">Excursions Chapada</div></div>
+    <div class="budget-card"><div class="budget-card-emoji">⛵</div><div class="budget-card-amount">~70 €</div><div class="budget-card-label">Activités Salvador</div></div>
+    <div class="budget-card"><div class="budget-card-emoji">🍽️</div><div class="budget-card-amount">~200 €</div><div class="budget-card-label">Bouffe (8 jours)</div></div>
+    <div class="budget-card"><div class="budget-card-emoji">🍹</div><div class="budget-card-amount">~40 €</div><div class="budget-card-label">Soirées</div></div>
+    <div class="budget-card"><div class="budget-card-emoji">🛡️</div><div class="budget-card-amount">~85 €</div><div class="budget-card-label">SIM + Assurance + Imprévus</div></div>
+  </div>
+  <div class="budget-total">
+    <div style="font-size:1rem; opacity:0.9;">TOTAL ESTIMÉ / PERSONNE</div>
+    <div class="budget-total-amount">~1 007 €</div>
+    <div style="font-size:1.2rem;">≈ 9 063 € pour le groupe</div>
+  </div>
+  <p class="budget-disclaimer">⚠️ Estimations mid-range. Booké tôt + en groupe, on peut descendre. En last minute, ça monte vite. Les vols sont la variable la plus volatile : à checker maintenant !</p>
+</div>
+
+<div class="reservations-section">
+  <div class="reservations-inner">
+    <h2 class="section-title">Réservations 📋</h2>
+    <p style="font-size:1.1rem; margin-bottom:1rem;">Tout ce qu'il faut booker — checklist groupe</p>
+    <div class="reservations-table">
+      <div class="resa-row header"><div>Type</div><div>Quoi</div><div>Prix groupe</div><div>Statut</div></div>
+      <div class="resa-row"><div class="resa-icon">✈️</div><div><strong>Vols AR Rio ↔ Salvador (×9)</strong><br><small>LATAM, GOL, Azul · ASAP</small></div><div class="resa-price">1 350 €</div><div><span class="resa-status todo">À faire</span></div></div>
+      <div class="resa-row"><div class="resa-icon">🏠</div><div><strong>Logement Salvador (4 nuits)</strong><br><small>Pelourinho ou Barra · ASAP</small></div><div class="resa-price">1 080 €</div><div><span class="resa-status todo">À faire</span></div></div>
+      <div class="resa-row"><div class="resa-icon">🚌</div><div><strong>Bus de nuit Salvador → Lençóis</strong><br><small>ClickBus · 1 mois avant</small></div><div class="resa-price">225 €</div><div><span class="resa-status todo">À faire</span></div></div>
+      <div class="resa-row"><div class="resa-icon">🏠</div><div><strong>Pousada Lençóis (1 nuit)</strong><br><small>Vila Serrano, Canto das Águas...</small></div><div class="resa-price">270 €</div><div><span class="resa-status todo">À faire</span></div></div>
+      <div class="resa-row"><div class="resa-icon">🏔️</div><div><strong>Guide+van Chapada (2 jours)</strong><br><small>Chapada Adventure, H2O Trekking · 1 mois avant</small></div><div class="resa-price">720 €</div><div><span class="resa-status todo">À faire</span></div></div>
+      <div class="resa-row"><div class="resa-icon">🚌</div><div><strong>Bus de nuit Lençóis → Salvador</strong><br><small>ClickBus · 1 mois avant</small></div><div class="resa-price">225 €</div><div><span class="resa-status todo">À faire</span></div></div>
+      <div class="resa-row"><div class="resa-icon">✈️</div><div><strong>Vol Salvador → Rio (04/07)</strong><br><small>LATAM/GOL/Azul · ASAP</small></div><div class="resa-price">540 €</div><div><span class="resa-status todo">À faire</span></div></div>
+      <div class="resa-row"><div class="resa-icon">🏠</div><div><strong>Logement Rio (1 nuit)</strong><br><small>Proche aéroport · ASAP</small></div><div class="resa-price">270 €</div><div><span class="resa-status todo">À faire</span></div></div>
+      <div class="resa-row"><div class="resa-icon">📱</div><div><strong>eSIM/SIM Brésil (chacun)</strong><br><small>Holafly, Airalo · avant départ</small></div><div class="resa-price">135 €</div><div><span class="resa-status todo">Chacun</span></div></div>
+      <div class="resa-row"><div class="resa-icon">🛡️</div><div><strong>Assurance voyage (chacun)</strong><br><small>Chapka, ACS, ou via CB premium</small></div><div class="resa-price">270 €</div><div><span class="resa-status todo">Chacun</span></div></div>
+      <div class="resa-row"><div class="resa-icon">💉</div><div><strong>Vaccin fièvre jaune</strong><br><small>Recommandé pour la Chapada · 1 mois avant</small></div><div class="resa-price">—</div><div><span class="resa-status todo">Chacun</span></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="checklist-section">
+  <div class="checklist-inner">
+    <h2 class="section-title">À emporter 🎒</h2>
+    <p style="font-size:1.1rem; margin-bottom:1rem;">Liste à cocher avant le départ — n'oubliez rien !</p>
+    <div class="checklist-grid">
+      <div class="checklist-card">
+        <h3>📄 Documents</h3>
+        <ul>
+          <li>Passeport (validité min 6 mois)</li>
+          <li>Billet d'avion (imprimé + numérique)</li>
+          <li>Photocopie passeport (à part)</li>
+          <li>Carnet de vaccination</li>
+          <li>Attestation assurance voyage</li>
+          <li>Carte bleue Visa/Mastercard sans frais</li>
+          <li>Cash : ~50 € (à changer en réais)</li>
+        </ul>
+      </div>
+      <div class="checklist-card">
+        <h3>👕 Vêtements</h3>
+        <ul>
+          <li>T-shirts légers ×4-5</li>
+          <li>Shorts ×2-3</li>
+          <li>Tenue sympa pour soirées</li>
+          <li>Pull/sweat (bus de nuit + Chapada)</li>
+          <li>Sous-vêtements ×7-8</li>
+          <li>2 maillots de bain</li>
+          <li>Baskets de marche (Chapada)</li>
+          <li>Tongs pour la plage</li>
+        </ul>
+      </div>
+      <div class="checklist-card">
+        <h3>🧴 Hygiène & Santé</h3>
+        <ul>
+          <li>Trousse toilette mini</li>
+          <li>Crème solaire SPF 50+</li>
+          <li>Anti-moustique tropical (DEET 30%+)</li>
+          <li>Serviette microfibre</li>
+          <li>Trousse à pharmacie de base</li>
+          <li>Cachet pour mal de mer</li>
+        </ul>
+      </div>
+      <div class="checklist-card">
+        <h3>📱 Tech</h3>
+        <ul>
+          <li>Téléphone + chargeur</li>
+          <li>Adaptateur prise (type N)</li>
+          <li>Batterie externe</li>
+          <li>eSIM ou SIM brésilienne</li>
+          <li>Écouteurs</li>
+        </ul>
+      </div>
+      <div class="checklist-card">
+        <h3>🎒 Sacs</h3>
+        <ul>
+          <li>1 grande valise/sac à dos voyage</li>
+          <li>1 petit sac à dos jour</li>
+          <li>Sac étanche (cascades) — optionnel</li>
+        </ul>
+      </div>
+      <div class="checklist-card">
+        <h3>🚌 Bus de nuit</h3>
+        <ul>
+          <li>Snacks (la clim cogne)</li>
+          <li>Oreiller cervical (sauveur !)</li>
+          <li>Bouchons d'oreilles + masque</li>
+          <li>Fringues chaudes</li>
+        </ul>
+      </div>
+      <div class="checklist-card">
+        <h3>☀️ Divers essentiels</h3>
+        <ul>
+          <li>Lunettes de soleil</li>
+          <li>Chapeau / casquette</li>
+          <li>Gourde réutilisable</li>
+          <li>Lampe frontale (grottes)</li>
+          <li>Petit cadenas</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="infos-section">
+  <div class="infos-inner">
+    <h2 class="section-title">Infos pratiques 🇧🇷</h2>
+    <p style="font-size:1.1rem; margin-bottom:1rem; opacity:0.9;">Tout ce qu'il faut savoir pour le Brésil</p>
+    <div class="infos-grid">
+      <div class="info-card">
+        <h3>💵 Monnaie</h3>
+        <p><strong>Real brésilien (R$)</strong></p>
+        <p>1 € ≈ 5,5 R$</p>
+        <p><strong>Cash :</strong> distributeurs partout MAIS à Lençóis ils tombent souvent en panne — retire à Salvador avant !</p>
+        <p><strong>Carte :</strong> Visa/Mastercard OK partout. Privilégier Revolut/N26 (sans frais).</p>
+        <p><strong>Pourboire :</strong> 10% souvent inclus, sinon arrondir.</p>
+      </div>
+      <div class="info-card">
+        <h3>🗣️ Langue</h3>
+        <p><strong>Portugais brésilien</strong></p>
+        <p><strong>Anglais :</strong> très peu parlé hors zones touristiques</p>
+        <p><strong>Espagnol :</strong> compréhensible à 60%</p>
+        <p><strong>Apps utiles :</strong> Google Translate (offline), DeepL</p>
+        <p><strong>À retenir :</strong> Oi (bonjour) · Obrigado/a (merci) · Tchau (au revoir)</p>
+      </div>
+      <div class="info-card">
+        <h3>🛡️ Sécurité</h3>
+        <p><strong>Salvador :</strong> Pelourinho touristique mais vigilance le soir. Éviter Cidade Baixa la nuit.</p>
+        <p><strong>Chapada :</strong> Très safe, ambiance villageoise.</p>
+        <p><strong>Bus de nuit :</strong> Garder objets de valeur sur soi.</p>
+        <div class="alert">⚠️ Ne pas exhiber téléphone, montre, bijoux. Ne JAMAIS laisser ses affaires sans surveillance sur la plage.</div>
+        <p style="margin-top:0.8rem;"><strong>Numéros utiles :</strong><br>Police touristique : 153<br>Urgences : 190 / SAMU : 192</p>
+      </div>
+      <div class="info-card">
+        <h3>💉 Santé</h3>
+        <p><strong>Vaccin fièvre jaune :</strong> RECOMMANDÉ pour la Chapada</p>
+        <p><strong>Vaccins de base :</strong> DTP, hépatite A&B, typhoïde à jour</p>
+        <div class="alert">⚠️ Eau du robinet PAS potable. Boire bouteille uniquement.</div>
+        <p style="margin-top:0.8rem;"><strong>Soleil :</strong> très puissant même en hiver brésilien. Crème SPF 50+ obligatoire.</p>
+        <p><strong>Moustiques :</strong> peu en juin (saison sèche), répulsif quand même en Chapada.</p>
+      </div>
+      <div class="info-card">
+        <h3>🔌 Électricité & Connexion</h3>
+        <p><strong>Voltage :</strong> 127V à Rio, 220V à Salvador.</p>
+        <p><strong>Prise :</strong> Type N (3 broches), adaptateur souvent nécessaire.</p>
+        <p><strong>Wifi :</strong> Quasi partout (pousadas, restos, cafés).</p>
+        <p><strong>eSIM :</strong> Holafly, Airalo (~25-30 € pour 10 jours illimité)</p>
+        <p><strong>SIM locale :</strong> Vivo ou Claro à l'aéroport SSA. Demander "chip turista".</p>
+      </div>
+      <div class="info-card">
+        <h3>🎭 Culture & Usages</h3>
+        <p><strong>Ponctualité :</strong> très souple, prévoir 15-30 min de tolérance.</p>
+        <p><strong>Repas :</strong> déjeuner = repas principal. Dîner plus tardif (20h-22h).</p>
+        <p><strong>Tenue :</strong> décontractée mais soignée. Tongs OK partout sauf restos chics.</p>
+        <p><strong>Photos :</strong> demander avant de photographier les gens (Baianas en costume).</p>
+      </div>
+      <div class="info-card">
+        <h3>📞 Contacts utiles</h3>
+        <p><strong>Ambassade France à Brasília :</strong><br>+55 61 3222 3999</p>
+        <p><strong>Consulat France à Rio :</strong><br>+55 21 3974 6699</p>
+        <p><strong>Consulat France à Salvador :</strong><br>+55 71 3334 0000</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-emoji">🌴 🍹 🇧🇷 🥥 🌊</div>
+  <div class="footer-title">Vamos lá !</div>
+  <p>Constance · Aloïs · Léandro · Mika · Noé · Manon · Axel · Augustin · Théophile</p>
+  <p style="margin-top:1.5rem; opacity:0.6; font-size:0.9rem;">Road Trip Bahia 2026 — La Tudo Team</p>
+  <div class="footer-credits">
+    <p>📌 Travail réalisé par<br><strong>LÉANDRO & MIKA</strong><br><span style="opacity:0.8; font-size:0.9rem;">Responsables Relations Internationales</span></p>
+  </div>
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  const map = L.map('map').setView([-13.5, -41], 6);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 19 }).addTo(map);
+  L.marker([-12.9714, -38.5014]).addTo(map).bindPopup('<b>🇧🇷 Salvador</b><br>27-30 juin & 3-4 juillet<br>Pelourinho, plages, capoeira');
+  L.marker([-12.5614, -41.3911]).addTo(map).bindPopup('<b>🏔️ Lençóis (Chapada)</b><br>1-2 juillet<br>Cascades, grottes, randos');
+  L.marker([-22.9068, -43.1729]).addTo(map).bindPopup('<b>🎶 Rio de Janeiro</b><br>4-5 juillet<br>Dernière nuit + vol retour');
+  L.polyline([[-12.9714,-38.5014],[-12.5614,-41.3911],[-12.9714,-38.5014],[-22.9068,-43.1729]], { color:'#FF8C42', weight:4, dashArray:'10, 10', opacity:0.8 }).addTo(map);
+  map.fitBounds([[-12.5614,-41.3911], [-22.9068,-43.1729]], { padding:[50,50] });
+
+  function updateCountdown() {
+    const departure = new Date('2026-06-27T12:00:00');
+    const now = new Date();
+    const diff = departure - now;
+    if (diff <= 0) { document.getElementById('countdown').innerHTML = '🎉 LE BRÉSIL C\'EST MAINTENANT !'; return; }
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    document.getElementById('countdown').innerHTML = `⏳ J-${days} jours et ${hours}h avant le départ`;
+  }
+  updateCountdown();
+  setInterval(updateCountdown, 60000);
+</script>
+
+</body>
+</html>
